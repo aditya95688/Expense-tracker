@@ -1,59 +1,86 @@
-expenses= []
+import json         
 def add_expense():
-    name = input("enter name of expense ")
-    amount = float(input("enter amount"))
-
-    expense = {
-        "name" : name ,
-        "amount" : amount
-    }   
-    expenses.append(expense)
-    print("expense added successfully")
-
+    name = input("enter name of expense ").strip()
+    try:
+        amount = float(input("enter amount"))
+    except ValueError:
+        print("Please enter valid no.")
+        return    
+    with open("expenses.json" , "r") as f:
+        data = json.load(f)
+    data.append(
+        {
+            "name" : name ,
+            "amount" : amount
+        })    
+    with open("expenses.json", "w") as f:
+        json.dump(data , f , indent = 4)
+    print("expense added successfully")    
 def view_expenses():
-    if len(expenses) == 0 :
-        print("no record found")
-    else:
-        for expense in expenses:
-            print("^^^^Expense list^^^^^^")
-            print("Name of expense:", expense["name"]) 
-            print("amount of expense", expense["amount"])
-
-
+    try:
+        with open ("expenses.json" , "r") as f:
+            data = json.load(f)
+        if len(data)== 0 :
+            print("no expenses found")
+            return    
+        for expense in data:
+            print(expense["name"],"-",expense["amount"])
+    except FileNotFoundError:
+        print("No Expenses found")
 def total_expenses():
-    total=0
-    for expense in expenses:
-        total = total + expense["amount"]
-    print("total expense: ",total) 
+    try:
+        overall_total = 0
+        with open("expenses.json","r") as f:
+            data= json.load(f)
+            if not data:
+                print("no expense found")
+                return
+            for expense in data: 
+                overall_total += expense["amount"]
+            print("overall total:",overall_total)
+    except FileNotFoundError:
+        print("No file found for expenses")        
+             
 
 def search_expenses():
-    name = input("enter name to search")
-    found = False
-    for expense in expenses:
-        if expense["name"] == name:
-            print("name:", expense["name"])
-            print("amount:", expense["amount"])
+    name = input("enter name to search").strip()
+    with open("expenses.json" , "r") as f:
+        data = json.load(f)
+    for expense in data:
+        if expense["name"].lower() == name.lower() :
+            print(expense["name"],"-", expense["amount"])    
+            return
+    print("no record found")    
 
 def update_expenses():
-    name = input("enter name to update")
-    for expense in expenses:
-        if expense["name"] == name:
+    name = input("enter name to update").strip()
+    with open("expenses.json" , "r") as f:
+        data = json.load(f)
+    for expense in data:
+        if expense["name"].lower() == name.lower() :
             new_name = input("enter updated name")
             new_amount = float(input("enter updated amount"))
-            
             expense["name"] = new_name
-            expense["amount"] = new_amount
-            print("updated successfully")
-            return
+            expense["amount"] = new_amount 
+        with open("expenses.json" , "w") as f:
+            json.dump(data , f , indent = 4)                   
+
+    
+        print("updated successfully")
+        return
     print("no record found")
 
 def delete_expenses():
     name = input("enter name of expense to delete")
-    for expense in expenses:
-        if expense["name"]== name:
-            expenses.remove(expense)
-            print("expense remmoved successfully")
-            return
+    with open("expenses.json" , "r") as f:
+        data = json.load(f)
+    for expense in data:
+        if expense["name"] == name :
+            data.remove(expense)
+            with open("expenses.json" , "w") as f:
+                json.dump(data , f ,indent = 4)
+            print("Expense deleted successfully")    
+            return           
     print("no record found")
 
 
